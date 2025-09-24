@@ -1,0 +1,17 @@
+data/pdfs/
+data/acl/
+data/colm/
+data/iclr/
+data/icml/
+data/neurips/
+.venv/
+.ipynb_checkpoints/
+__pycache__/
+data/*.jsonl
+tmp/
+*.png
+.env
+*.bib
+*.bak
+*.txt
+scraper/*.json
