@@ -3,26 +3,26 @@ import requests
 import dotenv
 import os
 # from transformers import pipeline
-from vllm import LLM
-import torch
+from vllm import LLM, SamplingParams
 import json
 import paper_dataset
 import tqdm
+import re
 dotenv.load_dotenv()
 
 USER_PROMPT_TITLE_ABSTRACT_YN = (
     "The title is: '{title}'. "
-    "The abstract is '{abstract}'. "
+    "The abstract is: '{abstract}'. "
     "Answer 'Yes' or 'No' and nothing else."
 )
 USER_PROMPT_TITLE_CONTENT_YN = (
     "The title is: '{title}'. "
-    "The abstract is '{content}'. "
+    "The abstract is: '{content}'. "
     "Answer 'Yes' or 'No' and nothing else."
 )
 USER_PROMPT_TITLE_CONTENT_OPEN = ( # TODO test
     "The title is: '{title}'. "
-    "The content is '{content}'. "
+    "The content is: '{content}'. "
     "The answer is: "
 )
 
@@ -70,6 +70,43 @@ SYSTEM_PROMPT_UNIT = ( # TODO test
     "the tokenizer operates on. Answer only with the most appropriate unit and nothing else."
 )
 
+SYSTEM_PROMPT_LANGUAGE = ( 
+    "You are a reviewer tasked with identifying the languages that are used as test cases, evaluation datasets, or experimental targets "
+    "in a research paper on tokenization given the title and content of the paper. "
+)
+USER_PROMPT_LANGUAGE_EN = ( # Output Yes/No
+    "The title is: '{title}'. \n"
+    "The content is '{content}'. \n\n"
+    "Does the paper use exclusively English as the language for experiments, datasets, or evaluation? Answer 'Yes' or 'No' and nothing else. "
+)
+# Output:
+#Here is the list of languages:
+
+# 1. English (en)
+# 2. Vietnamese (vi)
+# 3. Chinese (zh)
+# 4. French (fr)
+# 5. Arabic (ar)
+# 6. Japanese (ja)
+# 7. German (de)
+# 8. Czech (cs)
+USER_PROMPT_LANGUAGE_MULTILINGUAL = (
+    "The title is: '{title}'. \n"
+    "The content is: '{content}'. \n\n"
+    "List all the languages mentioned in the paper that are used as test cases, evaluation datasets, or experimental targets and nothing else: "
+) 
+ 
+def extract_languages(output: str) -> list[str]:
+    lines = output.lower().strip().split("\n")
+    lines = [line.strip() for line in lines if line.strip() != '']    
+    # 1. English (en) -> group 1: English
+    r = r"[0-9]+\. ([a-zA-Z ]+)" 
+    matches = [re.search(r, line) for line in lines]
+    matches = [m for m in matches if m is not None]
+    languages = [m.group(1) for m in matches if m.group(1) is not None]
+    return languages
+
+
 class _pipeline:
     def __new__(cls, model_name: str):
         if not hasattr(cls, 'model'):
@@ -93,11 +130,14 @@ def judge(system_prompt: str, user_prompt: str, items: dict[str, str], max_token
     
 
 def _judge_local(model_name: str, messages: list[dict[str, str]], max_new_tokens: int = 1) -> str:
-    model = _pipeline('text-generation', model=model_name, model_kwargs={"torch_dtype": torch.bfloat16}, device_map="auto")
+    # model = _pipeline('text-generation', model=model_name, model_kwargs={"torch_dtype": torch.bfloat16}, device_map="auto")
+    model = _pipeline(model_name)
+    sampling_params = model.get_default_sampling_params()
+    sampling_params.max_tokens = max_new_tokens
     # result = model(messages, max_new_tokens=max_new_tokens)[0]
     # response = result[0]["generated_text"]
     # answer = next(filter(lambda x: x["role"] == "assistant", response))["content"]
-    answer = model.chat(messages, max_tokens=max_new_tokens).outputs[0].text
+    answer = model.chat(messages, use_tqdm=False, sampling_params=sampling_params)[-1].outputs[-1].text
     return answer
 
 def _judge_api(model_name: str, messages: list[dict[str, str]], max_new_tokens: int = 1) -> str:

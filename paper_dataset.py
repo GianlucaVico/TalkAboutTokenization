@@ -183,8 +183,11 @@ def load(file: str = "data/papers.json") -> pd.DataFrame:
     df = pd.read_json(file, lines=True, orient="records")
     return df
 
+def pdf_url_to_file(url: str) -> str:
+    return url.split("https://")[-1].replace("/", "")
+
 def get_pdf(url: str, root: str = 'data/pdfs/') -> str:    
-    path = url.split("https://")[-1].replace("/", "")
+    path = pdf_url_to_file(url)
     path = os.path.join(root, path)
     if not os.path.exists(path):
         # print(f"Downloading {url} to {path}...", file=sys.stderr)
