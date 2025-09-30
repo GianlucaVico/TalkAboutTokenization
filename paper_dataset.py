@@ -200,7 +200,7 @@ def get_pdf(url: str, root: str = 'data/pdfs/') -> str:
             raise ValueError(f"Failed to download PDF from {url}, status code: {pdf.status_code}")
     return path
 
-def to_markdown(pdf_path: str, truncate_references: bool = True, remove_urls: bool = True, normalize_white: bool = True) -> str:
+def to_markdown(pdf_path: str, truncate_references: bool = True, remove_urls: bool = False, normalize_white: bool = True) -> str:
     pages = pymupdf4llm.to_markdown(pdf_path, page_chunks=True, ignore_graphics=True, ignore_images=True)
     md = pages[0]['text'] if len(pages) > 0 else ""
     md = re.sub(r'\n+[0-9]+\n+', ' ', md) # Remove page numbers

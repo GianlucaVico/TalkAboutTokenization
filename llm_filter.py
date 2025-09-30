@@ -104,6 +104,9 @@ def extract_languages(output: str) -> list[str]:
     matches = [re.search(r, line) for line in lines]
     matches = [m for m in matches if m is not None]
     languages = [m.group(1) for m in matches if m.group(1) is not None]
+    languages = [lang.strip().lower() for lang in languages]
+    languages = [lang for lang in languages if lang != '']
+    languages = list(set(languages))
     return languages
 
 
