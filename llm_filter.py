@@ -99,11 +99,14 @@ USER_PROMPT_LANGUAGE_MULTILINGUAL = (
 def extract_languages(output: str) -> list[str]:
     lines = output.lower().strip().split("\n")
     lines = [line.strip() for line in lines if line.strip() != '']    
-    # 1. English (en) -> group 1: English
-    r = r"[0-9]+\. ([a-zA-Z ]+)" 
+    # 1. English (en) -> group 1: English (en)
+    r = r"(?:[0-9]+\.|\*) (?P<l1>[\w \(\)'\.\-,]+)|(?P<l2>english)|(?P<l3>chinese)" 
     matches = [re.search(r, line) for line in lines]
     matches = [m for m in matches if m is not None]
-    languages = [m.group(1) for m in matches if m.group(1) is not None]
+    # languages = [m.group(1) for m in matches if m.group(1) is not None]
+    languages = []
+    for g in ['l1', 'l2', 'l3']:
+        languages.extend([m.group(g) for m in matches if m.group(g) is not None])
     languages = [lang.strip().lower() for lang in languages]
     languages = [lang for lang in languages if lang != '']
     languages = list(set(languages))
@@ -152,9 +155,10 @@ def _judge_api(model_name: str, messages: list[dict[str, str]], max_new_tokens: 
       "model": model_name,
       "messages": messages,
       "max_tokens": max_new_tokens, 
+      "timeout": 600,
     }
     answer = ""
-    response = requests.post(os.environ["LLM_URL"], headers=headers, json=data)
+    response = requests.post(os.environ["LLM_URL"], headers=headers, json=data, timeout=600)
     if response.status_code == 200:
         answer = response.json()['choices'][0]['message']['content']        
     else:
@@ -210,3 +214,15 @@ def test(file: str, fn: Callable[[str, str, str], Any], answer_key) -> None:
         print(f"Title: {s.get('title')}")
         print(f"Answer: {a} (Reference: {r})")
         print("-" * 80)        
+
+def has_pypi(md: str) -> bool:
+    pattern = r'\[.*?\]\(https://pypi\.org/project/.*?\)'
+    return re.search(pattern, md) is not None
+
+def has_repository(md: str) -> bool:
+    # github, bitbucket, gitlab, ...
+    github = r'\[.*?\]\(https://github\.com/.*?\)'
+    bitbucket = r'\[.*?\]\(https://bitbucket\.org/.*?\)'
+    gitlab = r'\[.*?\]\(https://gitlab\.com/.*?\)'
+    pattern = f'({github})|({bitbucket})|({gitlab})'
+    return re.search(pattern, md) is not None
