@@ -168,7 +168,7 @@ def _combine_openreview(folder: str, type_: str) -> list[dict]:
             papers.append(paper)
     return papers
 
-def create(file: str = "data/papers.json") -> None:
+def create(file: str = "data/papers.jsonl") -> None:
     acl = _combine_acl()
     neurips = _combine_neurips()
     icml = _combine_openreview("data/icml/papers", "icml")
@@ -179,7 +179,7 @@ def create(file: str = "data/papers.json") -> None:
         for paper in papers:
             f.write(json.dumps(paper) + "\n")
 
-def load(file: str = "data/papers.json") -> pd.DataFrame:
+def load(file: str = "data/papers.jsonl") -> pd.DataFrame:
     df = pd.read_json(file, lines=True, orient="records")
     return df
 

@@ -4,6 +4,8 @@ data/colm/
 data/iclr/
 data/icml/
 data/neurips/
+data/old/
+data/raw_answers/
 .venv/
 .ipynb_checkpoints/
 __pycache__/
