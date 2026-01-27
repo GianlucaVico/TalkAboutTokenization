@@ -240,10 +240,10 @@ def get_markdown(url: str, root: str = 'data/pdfs/', cache: bool=True) -> str:
 EXCLUDE_SECTIONS = [
     'reference', 'bibliography', 'acknowled', 
     'appendix', 'supplement', 'contributions', 'ethic', 
-    'experiment', 'result'
+    # 'experiment', 'result'
 ]
 
-def split_sections(md: str, num: bool = True, exclude_list: list[str] | None = EXCLUDE_SECTIONS) -> dict[str, str]:
+def split_sections(md: str, num: bool = True, exclude_list: list[str] | None = EXCLUDE_SECTIONS) -> list[str]:
     # ** 1 Introduction ** | **1** **Introduction** style
     r = r'(?=#* *\*\*[0-9]+.*\*\*)' if num else r'(?=#* *\*\*.*\*\*)'
     parts = re.split(r, md)
