@@ -1,10 +1,8 @@
-import pycountry
 import pyglottolog
 import os
 import dotenv
 import pyglottolog.config
 import pyglottolog.languoids
-import pyglottolog.fts
 dotenv.load_dotenv()
 import functools
 import yaml

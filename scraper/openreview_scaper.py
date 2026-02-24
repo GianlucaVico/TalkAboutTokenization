@@ -1,3 +1,4 @@
+from collections.abc import Callable
 import os
 import json
 import time
@@ -5,7 +6,7 @@ import tqdm
 import openreview.api
 import re
 
-def scraper(prefix: str, folder):
+def scraper(prefix: str, folder: str, year_filter: Callable[[str], bool]=None):
     year_re = re.compile(r"[0-9]{4}")
 
     client = openreview.api.OpenReviewClient(baseurl='https://api2.openreview.net')
@@ -28,6 +29,9 @@ def scraper(prefix: str, folder):
             print(f"{venue}: no year")
         else:
             year = year.group()
+        if year_filter is not None and not year_filter(year):
+            print(f"{venue}: year {year} filtered out")
+            continue
         papers = client.get_all_notes(content={"venueid": venue})
         if len(papers) == 0:
             print(f"No papers found for {venue}")

@@ -299,7 +299,7 @@ def _judge_vllm(
 def _judge_hf(
     model_name: str, messages: list[dict[str, str]], max_new_tokens: int = 1
 ) -> str:
-    model = _pipeline(model_name, vllm=True)
+    model = _pipeline(model_name, hf=True)
     answer = model(messages, do_sample=False, max_new_tokens=max_new_tokens)[-1][
         "generated_text"
     ][-1]["content"].strip()

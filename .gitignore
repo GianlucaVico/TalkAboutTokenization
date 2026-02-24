@@ -4,8 +4,11 @@ data/colm/
 data/iclr/
 data/icml/
 data/neurips/
+data/neurips2025/
+data/neurips2025/papers/
 data/old/
-data/raw_answers/
+data/raw_answers*/
+data/backup/
 .venv/
 .ipynb_checkpoints/
 __pycache__/
@@ -16,4 +19,9 @@ tmp/
 *.bib
 *.bak
 *.txt
+*.err
+*.out
 scraper/*.json
+OUTDATED/
+jupyter_slurm.sh
+llm_job.sh

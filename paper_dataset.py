@@ -287,7 +287,18 @@ def filter_topic_re(df):
     return df["abstract"].apply(lambda x: x is not None and re.search(keywords, x.lower()) is not None)
 
 if __name__ == "__main__":
-    create()
-    df = load()
-    print(df.head())
-    print(f"Total papers: {len(df)}")
+    if not os.path.exists("data/papers.jsonl"):
+        create()
+        df = load()
+        print(df.head())
+        print(f"Total papers: {len(df)}")
+    else:
+        print("Dataset already exists. Looking for new papers...") 
+        create(file="data/papers_new.jsonl")
+        df = load("data/papers_new.jsonl")
+        old_df = load("data/papers.jsonl")
+        new_df = df[~df["bibtex_id"].isin(old_df["bibtex_id"])]
+        print(new_df.head())
+        print(f"New papers found: {len(new_df)}")
+        if len(new_df) > 0:
+            new_df.to_json("data/papers_diff.jsonl", orient="records", lines=True)

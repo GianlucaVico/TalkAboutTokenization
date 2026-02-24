@@ -6,7 +6,10 @@ import json
 BACKEND = "hf"
 
 if __name__ == "__main__":
-    real_tokenization = paper_dataset.load("data/real_tokenization.jsonl")
+    # real_tokenization = paper_dataset.load("data/real_tokenization.jsonl")
+    real_tokenization = paper_dataset.load("data/real_tokenization_diff.jsonl")
+    if 'exclude' not in real_tokenization.columns:
+        real_tokenization['exclude'] = False
 
     # METRICS + TASKS
     print("=== METRIC + TASK EXTRACTION ===")
