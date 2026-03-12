@@ -104,7 +104,18 @@ def get_macroarea(lang: pyglottolog.languoids.Languoid | LanguoidPlaceHolder | N
         return [replace_map.get(NO_MACROAREA.name, NO_MACROAREA.name)]
     else:
         names = []
-        for macroarea in lang.macroareas:              
+        if len(lang.macroareas) == 0:
+            try:
+                macroareas = lang.parent.macroareas
+                if len(macroareas) == 0:
+                    macroareas = lang.parent.parent.macroareas
+                if len(macroareas) == 0:
+                    macroareas = [NO_MACROAREA]
+            except AttributeError:
+                macroareas = [NO_MACROAREA]
+        else:
+            macroareas = lang.macroareas
+        for macroarea in macroareas:              
             names.append(replace_map.get(macroarea.name, macroarea.name))
     return names
 

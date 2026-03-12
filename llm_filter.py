@@ -168,7 +168,8 @@ def _metric_normalization(metric: str) -> str:
         "f value": ["f1 score"],
         "bleu lcs f-score cer acc": ["bleu", "lcs", "f1 score", "character error rate", "accuracy"],
         "gflops": ["flops"],
-        "bleu score": ["bleu"],        
+        "bleu score": ["bleu"], 
+        "score": [], # too generic, ignore
     }
 
     tmp = mapping.get(metric, None)
@@ -248,6 +249,12 @@ def extract_units(output: str) -> list[str]:
             tmp.append("morphemes")
         elif item in ["phoneme", "phonemes", "phones"]:
             tmp.append("phonemes")
+        elif item in ["patch tokens", "patches"]:
+            tmp.append("patches")
+        elif item in ["image tokens", "visual tokens"]:
+            tmp.append("image tokens")
+        elif item in ["word", "words"]:
+            tmp.append("words")
         elif "\n" in item or ")" in item:
             pass
         else:

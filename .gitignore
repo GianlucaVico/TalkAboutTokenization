@@ -9,6 +9,7 @@ data/neurips2025/papers/
 data/old/
 data/raw_answers*/
 data/backup/
+data/motivation_bertopic_model*
 .venv/
 .ipynb_checkpoints/
 __pycache__/
@@ -25,3 +26,4 @@ scraper/*.json
 OUTDATED/
 jupyter_slurm.sh
 llm_job.sh
+.vscode
