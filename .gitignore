@@ -24,6 +24,7 @@ tmp/
 *.out
 scraper/*.json
 OUTDATED/
+OLD/
 jupyter_slurm.sh
 llm_job.sh
 .vscode

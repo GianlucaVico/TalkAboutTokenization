@@ -79,7 +79,7 @@ def _combine_acl(bibfile: str = "data/acl/anthology+abstracts.bib") -> list[dict
             papers.append(paper)
     return papers
 
-def _combine_neurips(bibfile: str = "data/neurips/neurips_20250610.bib") -> list[dict]:
+def _combine_neurips(bibfile: str = "data/neurips/neurips.bib") -> list[dict]:
     library = bibfilter.parse(bibfile, quiet=True)
     papers = []
 
@@ -175,9 +175,9 @@ def create(file: str = "data/papers.jsonl") -> None:
     iclr = _combine_openreview("data/iclr/papers", "iclr") 
     colm = _combine_openreview("data/colm/papers", "colm")
     papers = acl + neurips + icml + iclr + colm
-    with open(file, "w") as f:
-        for paper in papers:
-            f.write(json.dumps(paper) + "\n")
+    papers = pd.DataFrame(papers).drop_duplicates(subset=["bibtex_id"])
+    papers.to_json(file, orient="records", lines=True)
+
 
 def load(file: str = "data/papers.jsonl") -> pd.DataFrame:
     df = pd.read_json(file, lines=True, orient="records")
@@ -279,10 +279,10 @@ def print_sample(row):
     print("=" * 80)
     print()
 
-def sample(df: pd.DataFrame, n: int = 5) -> None:
+def sample(df: pd.DataFrame, n: int = 5) -> pd.DataFrame:
     return df.sample(n=n, random_state=42)
 
-def filter_topic_re(df):
+def filter_topic_re(df: pd.DataFrame) -> pd.Series: # OUTDATED/UNUSED
     keywords = re.compile(r"token|sub-?word|segment")
     return df["abstract"].apply(lambda x: x is not None and re.search(keywords, x.lower()) is not None)
 

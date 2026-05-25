@@ -36,6 +36,7 @@ df = paper_dataset.load("data/papers_diff_topic.jsonl")
 real_tokenization = df[df['topic'] == True]
 real_tokenization = real_tokenization.copy()
 
+# TODO update is_*()
 real_tokenization['tokenization'] = real_tokenization.progress_apply(lambda x: llm_filter.is_tokeniser(x['title'], x['abstract']), axis=1)
 real_tokenization['evaluation'] = real_tokenization.progress_apply(lambda x: llm_filter.is_evaluation(x['title'], x['abstract']), axis=1)
 real_tokenization['survey'] = real_tokenization.progress_apply(lambda x: llm_filter.is_survey(x['title'], x['abstract']), axis=1)

@@ -8,7 +8,8 @@ import os
 import ipdb
 root = "https://papers.nips.cc"
 base_url = "https://papers.nips.cc/paper_files/paper/{year}"
-years = range(1987, 2025)
+# years = range(1987, 2026)
+years = range(2000, 2026)
 
 def collect_paper_urls(base_url, years, root):
     collected = []
@@ -54,13 +55,13 @@ def download_bib_and_abstract(urls, root):
             # Get abstract
             bibs.append(bib_content.text)
             bib_id = bib_content.text.split("\n")[0].split("{")[1].split(",")[0].strip()
-            abstract_section = soup.find("h4", string="Abstract")
+            abstract_section = soup.find("h2", string="Abstract")
             if abstract_section is None:
                 print(f"No abstract found for {url}")
                 continue
             abstract_text = abstract_section.find_next("p").text.strip()
             abstracts[bib_id] = abstract_text
-            time.sleep(1)
+            time.sleep(0.5)
     except Exception as e:
         ok = False
         print(f"An error occurred: {e}")
@@ -88,6 +89,7 @@ if __name__ == "__main__":
 
     # Download bib files
     download = False
+    broken_err = False
     if os.path.exists("neurips.bib"):
         with open("neurips.bib", "r") as f:
             bibs = f.readlines()
@@ -97,6 +99,9 @@ if __name__ == "__main__":
     if os.path.exists("neurips_abstracts.json"):
         with open("neurips_abstracts.json", "r") as f:
             abstracts = json.load(f)
+            if len(abstracts) < len(urls):
+                download = True
+                broken_err = True
     else:
         download = True
     
@@ -106,13 +111,15 @@ if __name__ == "__main__":
     if download:
         old_bibs = ""
         old_abstracts = {}
-        if os.path.exists("neurips.err"):
-            with open("neurips.err", "r") as f:
-                n = int(f.read())
+        if broken_err or os.path.exists("neurips.err"):
+            # with open("neurips.err", "r") as f:
+                # n = int(f.read())
             with open("neurips.bib", "r") as f:
                 old_bibs = f.read()
             with open("neurips_abstracts.json", "r") as f:
                 old_abstracts = json.load(f)
+                n = len(old_abstracts)
+            print(f"Resuming download from index {n} out of {len(urls)}")
             urls = urls[n:]
         bibs, abstracts, ok = download_bib_and_abstract(urls, root)
         
@@ -131,6 +138,7 @@ if __name__ == "__main__":
         else:
             try:
                 os.remove("neurips.err")
+                pass
             except FileNotFoundError:
                 pass
     else:
