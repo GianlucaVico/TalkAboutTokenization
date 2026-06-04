@@ -1,5 +1,4 @@
 from collections.abc import Generator, Iterable
-import functools
 import pandas as pd
 import requests
 import dotenv
@@ -10,7 +9,8 @@ import re
 from llm_pipeline import _pipeline
 import datasets
 from llm_prompts import *
-
+import time
+import sys
 import functools
 
 dotenv.load_dotenv()
@@ -40,9 +40,16 @@ def _judge_api(
         os.environ["LLM_URL"], headers=headers, json=data, timeout=600
     )
     if response.status_code == 200:
-        answer = response.json()["choices"][0]["message"]["content"]
+        try:
+            answer = response.json()["choices"][0]["message"]["content"]
+        except Exception as e:
+            # raise RuntimeError(f"Response parsing error: {e}. Response text: {response.text}")
+            print(f"\nResponse parsing error: {e}. Response text: {response}\n", file=sys.stderr)
+            answer = ""
     else:
-        raise RuntimeError(f"Response error {response.status_code}: {response.text}")
+        # raise RuntimeError(f"Response error {response.status_code}: {response.text}")
+        print(f"\nResponse error {response.status_code}: {response}\n", file=sys.stderr)
+        answer = ""
     return answer
 
 def judge_generator(
@@ -74,6 +81,7 @@ def judge_generator(
         )
         for messages in fmt(items_ds):
             answer = judge_fn(messages=messages).strip()
+            time.sleep(10)
             yield answer
 
 def filter_topic(
@@ -85,6 +93,24 @@ def filter_topic(
     user_prompt = USER_PROMPT_TITLE_ABSTRACT_YN if zero_shot else TOKENIZATION_EXAMPLES + USER_PROMPT_TITLE_ABSTRACT_YN
     gen = judge_generator(
         SYSTEM_PROMPT_FILTER, 
+        user_prompt,
+        items(titles, abstracts),
+        backend=backend
+    )
+    with open(file, "w") as f:
+        for answer in tqdm.tqdm(gen, disable=tqdm_disable, total=len(titles), desc="Filtering"):
+            f.write(answer.replace("\n", "\\n") + "\n")            
+            yield answer.lower().startswith("yes")
+
+def filter_tokfree(
+    abstracts: list[str], titles: list[str], backend: str = "hf", zero_shot: bool = False, tqdm_disable: bool = False, file: str = os.devnull
+) -> Generator[bool, None, None]:
+    def items(titles, abstracts):
+        for t, a in zip(titles, abstracts):
+            yield {"title": t, "abstract": a}
+    user_prompt = USER_PROMPT_TITLE_ABSTRACT_YN if zero_shot else TOKENIZATION_EXAMPLES + USER_PROMPT_TITLE_ABSTRACT_YN
+    gen = judge_generator(
+        SYSTEM_PROMPT_FILTER_TOKFREE, 
         user_prompt,
         items(titles, abstracts),
         backend=backend
@@ -106,14 +132,11 @@ def _get_features(
 ) -> Generator[str, None, None]:
     def ds_gen():
         for item in items.iloc:
-            if item["exclude"]:
-                yield {"title": "", "content": ""}
-            else:
-                md = paper_dataset.get_markdown(item["pdf_url"])
-                if remove_sections:
-                    md = "\n\n".join(paper_dataset.split_sections(md))
-                title = item["title"] if item["title"] is not None else ""
-                yield {"title": title, "content": md}
+            md = paper_dataset.get_markdown(item["pdf_url"])
+            if remove_sections:
+                md = "\n\n".join(paper_dataset.split_sections(md))
+            title = item["title"] if item["title"] is not None else ""
+            yield {"title": title, "content": md}
 
     n = len(items)
     ds = datasets.Dataset.from_generator(ds_gen)
