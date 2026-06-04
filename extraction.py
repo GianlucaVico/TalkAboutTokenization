@@ -1,10 +1,26 @@
 import re
 import itertools
 import pycountry
+import functools
+from extraction_maps import *
+
+@functools.cache
+def invert_mapping(mapping: dict[str, list[str]]) -> dict[str, str]:
+    inverted = {}
+    for key, values in mapping.items():
+        for value in values:
+            inverted[value] = key
+    return inverted
+
+
 
 def extract_languages(output: str) -> list[str]:
-    parenthesis = r"\([^\(\)]{4,}\)" # match parentheses with at least 4 characters inside
-    parenthesis_codes = r"\([^\(\)]{2,3}\)" # match parentheses with at least 4 characters inside
+    parenthesis = (
+        r"\([^\(\)]{4,}\)"  # match parentheses with at least 4 characters inside
+    )
+    parenthesis_codes = (
+        r"\([^\(\)]{2,3}\)"  # match parentheses with at least 4 characters inside
+    )
     number_list = r"^[0-9]+\. "
     forbidden = ["implied", "explicit", "no specif", "mention"]
 
@@ -12,16 +28,22 @@ def extract_languages(output: str) -> list[str]:
     lines = output.split("\n")
     lines = [line for line in lines if all(f not in line.lower() for f in forbidden)]
 
-    lines = [re.sub(parenthesis, "", line) for line in lines]  # remove parentheses with explanation
+    lines = [
+        re.sub(parenthesis, "", line) for line in lines
+    ]  # remove parentheses with explanation
     if len(lines) == 1 or (len(lines) >= 1 and lines[0].count(",") > 3):
         lines = [line.split(",") for line in lines]
         lines = list(itertools.chain.from_iterable(lines))
 
-    # lines = [line.split(",") for line in lines]    
+    # lines = [line.split(",") for line in lines]
     lines = [line.lstrip("*").strip() for line in lines]
     lines = [re.sub(number_list, "", line).strip() for line in lines]
     lines = [line for line in lines if line != ""]
-    lines = [line for line in lines if "no specific" not in line.lower() and line.lower() != "none"]
+    lines = [
+        line
+        for line in lines
+        if "no specific" not in line.lower() and line.lower() != "none"
+    ]
 
     # find language codes, 2 or 3 letters with the same case
     langs = []
@@ -33,18 +55,18 @@ def extract_languages(output: str) -> list[str]:
                 lang = pycountry.languages.get(alpha_3=line)
             else:
                 lang = None
-                langs.append(line) # Programming languages
+                langs.append(line)  # Programming languages
             if lang is not None:
                 # Remove parenthesis from name
                 lang = re.sub(parenthesis, "", lang.name).strip()
                 langs.append(lang)
-            elif line == "tib": # Missing in pycountry
+            elif line == "tib":  # Missing in pycountry
                 langs.append("Tibetan")
-            elif line == "eml": # Deprecated
+            elif line == "eml":  # Deprecated
                 langs.append("Emiliano-Romagnolo")
             else:
                 print(f"Warning: language code {line} not found")
-    
+
         else:
             langs.append(line)
     # Remove codes in parentheses
@@ -52,7 +74,9 @@ def extract_languages(output: str) -> list[str]:
     langs = sorted(list(set(langs)))
     return langs
 
-def extract_units(output: str) -> list[str]:
+
+
+def extract_units(output: str, unit_mapping: dict[str, list[str]] = None, other: bool = False) -> list[str]:
     output = output.lower().strip()
     output = re.sub(
         r"\([^\(\)]*\) ?", "", output
@@ -71,29 +95,11 @@ def extract_units(output: str) -> list[str]:
     items = [i.replace("sub-word", "subword") for i in items]  # normalize sub-word
     items = [i for i in items if i != ""]
 
-    tmp = []
-    for item in items: # handcrafted normalization
-        if item in ["token", "tokens", "subword tokens", "subword", "subword units", "semantic tokens", "text tokens", "segments", "wordpieces"]:
-            tmp.append("subwords")
-        elif item == "unicode characters":
-            tmp.append("characters")
-        elif item == "character":
-            tmp.append("characters")
-        elif item in ["morpheme", "morphemes","morphs"]:
-            tmp.append("morphemes")
-        elif item in ["phoneme", "phonemes", "phones"]:
-            tmp.append("phonemes")
-        elif item in ["patch tokens", "patches"]:
-            tmp.append("patches")
-        elif item in ["image tokens", "visual tokens"]:
-            tmp.append("image tokens")
-        elif item in ["word", "words"]:
-            tmp.append("words")
-        elif "\n" in item or ")" in item:
-            pass
+    if unit_mapping is not None:
+        inv_map = invert_mapping(unit_mapping)
+        if other:
+            items = [inv_map.get(item, "other") for item in items]
         else:
-            tmp.append(item)
-
-    units = sorted(list(set(tmp)))
-
+            items = [inv_map.get(item, item) for item in items]
+    units = sorted(list(set(items)))
     return units
