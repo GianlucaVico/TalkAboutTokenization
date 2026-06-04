@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import argparse
+import json
+import os
 import pandas as pd
 import random
 import ipdb
@@ -8,7 +10,9 @@ TRUE_CHAR = "\x91" # PU1
 FALSE_CHAR = "\x92" # PU2
 SEPARATOR = "#"*40 + "\n"
 
-
+CORRECT_CHAR = "v"
+INCORRECT_CHAR = "x"
+PARTIAL_CHAR = "/"
 
 def create(path: str, out: str, n: int, seed: int) -> None:
     df = pd.read_json(path, lines=True)
@@ -19,7 +23,7 @@ def create(path: str, out: str, n: int, seed: int) -> None:
     for s in [selected, discarded]:
         for row in s.iloc:
             abstract = row["abstract"]
-            if abstract is None:
+            if abstract is None or pd.isna(abstract):
                 abstract = ""
             else:
                 abstract = abstract.strip()
@@ -134,23 +138,67 @@ def evaluate(path: str) -> None:
 def fix(input_path: str, output_path: str, original_path: str) -> None:
     raise NotImplementedError()
 
+def create_info(input_path: str, output_path: str, raw_dir: str, n: int, seed: int) -> None:
+    import paper_dataset
+    df = pd.read_json(input_path, lines=True)
+    selected = random.Random(seed).sample(range(len(df)), n)
+    selected_df = df.iloc[selected]
+    if os.path.exists(output_path):
+        raise FileExistsError(f"Output file '{output_path}' already exists")
+    
+    files = {
+        "units": os.path.join(raw_dir, "unit_answer.json"),
+        "motivation": os.path.join(raw_dir, "motivation_answer.json"),
+        "languages": os.path.join(raw_dir, "language_answer.json"),
+        "lang_specific": os.path.join(raw_dir, "language_specific_answer.json"),
+        "intrinsic": os.path.join(raw_dir, "evaluation_intrinsic_answer.json"),
+        "extrinsic": os.path.join(raw_dir, "evaluation_extrinsic_answer.json"), 
+    }
+
+    pdfs = selected_df["pdf_url"].tolist()
+    pdfs = [paper_dataset.get_pdf(url, root="/home/vico/personal_work_ms/TokSurvey/data/pdfs/") for url in pdfs]
+    pdfs = [f'=HYPERLINK("{pdf}", "pdf")' for pdf in pdfs]
+    selected_df["pdf_path"] = pdfs
+    selected_df = selected_df[["bibtex_id", "title", "pdf_path"]]
+
+    # Sheets: units, motivation, languages, lang. specific, evaluation-intrinsic, evaluation-extrinsic
+    # Columns: index, bibtex_id, title, pdf link, raw answer, human annotation
+    # Link '=hyperlink(path_to_file,"pdf")'
+    with pd.ExcelWriter(output_path) as writer:
+        for sheet_name, file_path in files.items():
+            tmp_df = selected_df.copy()
+            with open(file_path, "rt") as f:
+                raw_answers = json.load(f)
+                raw_answers = [raw_answers[i] for i in selected]
+            tmp_df["raw_answer"] = raw_answers
+            tmp_df["human_annotation"] = ""
+            tmp_df.to_excel(writer, sheet_name=sheet_name)
+    
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate classification quality. The annotator should write T if the papers is a tokenizer paper, F if it is not.")
 
     subparsers = parser.add_subparsers(dest="command", required=True)
     create_parser = subparsers.add_parser("create", help="Create the sample file")
-    create_parser.add_argument("--output", "-o", required=True, help="Output file for the sample")
+    create_parser.add_argument("output", help="Output file for the sample")
     create_parser.add_argument("--num-samples", "-n", type=int, default=100, help="Number of samples from selected and discarded sets")
     create_parser.add_argument("--seed", "-s", type=int, default=42, help="Random seed for reproducibility")
-    create_parser.add_argument("--input", "-i", default="data/topic_papers.jsonl", help="JSONL file with the papers and the 'topic' field (1/True for selected, 0/False/None for discarded)")
+    create_parser.add_argument("--input", "-i", default="data/papers.jsonl", help="JSONL file with the papers and the 'topic' field (1/True for selected, 0/False/None for discarded)")
 
     evaluate_parser = subparsers.add_parser("evaluate", help="Evaluate the classification quality")
     evaluate_parser.add_argument("annotations", help="Text file with the human annotations")
 
     fix_parser = subparsers.add_parser("fix", help="Fix the dataset based on the annotations")
-    fix_parser.add_argument("--input", "-i", required=True, help="Input file with the annotations")
-    fix_parser.add_argument("--output", "-o", required=True, help="Output file for the fixed dataset")  
-    fix_parser.add_argument("--original", "-r", required=True, help="Original dataset file (JSONL format)")
+    fix_parser.add_argument("input", help="Input file with the annotations")
+    fix_parser.add_argument("output", help="Output file for the fixed dataset")  
+    fix_parser.add_argument("original", help="Original dataset file (JSONL format)")
+
+    info_extraction_parser = subparsers.add_parser("create-info", help="Create the sample file for evaluating the information extracted")
+    info_extraction_parser.add_argument("output", help="Output file for the sample")
+    info_extraction_parser.add_argument("--num-samples", "-n", type=int, default=10)
+    info_extraction_parser.add_argument("--seed", "-s", type=int, default=42, help="Random seed for reproducibility")
+    info_extraction_parser.add_argument("--input", "-i", default="data/tokenization.jsonl")
+    info_extraction_parser.add_argument("--raw-answers", default="data/raw_answers/", help="Directory with the raw answers")
 
     # Structure:
     # ######################################## (40)
@@ -168,3 +216,5 @@ if __name__ == "__main__":
         evaluate(args.annotations)
     elif args.command == "fix":
         fix(args.input, args.output, args.original)
+    elif args.command == "create-info":
+        create_info(args.input, args.output, args.raw_answers, args.num_samples, args.seed)
