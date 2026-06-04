@@ -201,7 +201,7 @@ def get_pdf(url: str, root: str = 'data/pdfs/') -> str:
     return path
 
 def to_markdown(pdf_path: str, truncate_references: bool = True, remove_urls: bool = False, normalize_white: bool = True) -> str:
-    pages = pymupdf4llm.to_markdown(pdf_path, page_chunks=True, ignore_graphics=True, ignore_images=True)
+    pages = pymupdf4llm.to_markdown(pdf_path, page_chunks=True, ignore_graphics=True, ignore_images=True, use_ocr=False)
     md = pages[0]['text'] if len(pages) > 0 else ""
     md = re.sub(r'\n+[0-9]+\n+', ' ', md) # Remove page numbers
     for page in pages[1:]:
@@ -238,27 +238,28 @@ def get_markdown(url: str, root: str = 'data/pdfs/', cache: bool=True) -> str:
         return to_markdown(pdf_path)    
 
 EXCLUDE_SECTIONS = [
-    'reference', 'bibliography', 'acknowled', 
+    'reference', 'references', 'bibliography', 'acknowled', 
     'appendix', 'supplement', 'contributions', 'ethic', 
     # 'experiment', 'result'
 ]
 
-def split_sections(md: str, num: bool = True, exclude_list: list[str] | None = EXCLUDE_SECTIONS) -> list[str]:
+def split_sections(md: str, num: bool = False, exclude_list: list[str] | None = EXCLUDE_SECTIONS) -> list[str]:
     # ** 1 Introduction ** | **1** **Introduction** style
     r = r'(?=#* *\*\*[0-9]+.*\*\*)' if num else r'(?=#* *\*\*.*\*\*)'
     parts = re.split(r, md)
-    parts = [p.strip() for p in parts if len(p.strip()) > 0]
-    if len(parts) != 1:
+    parts = [p.strip() for p in parts if len(p.strip()) > 3] # Remove almost empty sections
+    if len(parts) == 1:
         # \n1 Introduction\n | \n1 I NTRODUCTION\n style
         r = r'(?=\n+[0-9]+[A-Za-z &]+\n+)' if num else r'(?=\*\*.*\*\*)'
         parts = re.split(r, md)
         parts = [p.strip() for p in parts if len(p.strip()) > 0]
 
-
     if exclude_list is not None:        
         titles = [
-            re.search(r'[a-z &]+', parts[2].split('\n')[0].lower()).group().strip()    
+            re.search(r'[a-z &]+', p.split('\n')[0].lower())
+            for p in parts
         ]            
+        titles = [i.group().strip() for i in titles if i is not None]
         titles = [any(ex in t for ex in exclude_list) for t in titles]
         parts = [p for p, t in zip(parts, titles) if not t]
     return parts 
@@ -285,6 +286,9 @@ def sample(df: pd.DataFrame, n: int = 5) -> pd.DataFrame:
 def filter_topic_re(df: pd.DataFrame) -> pd.Series: # OUTDATED/UNUSED
     keywords = re.compile(r"token|sub-?word|segment")
     return df["abstract"].apply(lambda x: x is not None and re.search(keywords, x.lower()) is not None)
+
+def not_duplicate_mask(df: pd.DataFrame) -> pd.Series:
+    return ~df.duplicated(subset=["title"], keep='first')
 
 if __name__ == "__main__":
     if not os.path.exists("data/papers.jsonl"):
