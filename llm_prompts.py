@@ -6,6 +6,11 @@ SYSTEM_PROMPT_FILTER = (
     "You are given the title and abstract of the paper."    
 )
 
+SYSTEM_PROMPT_FILTER_TOKFREE = ( 
+    "You are a helpful assistant. Your task is to decide whether the following paper is about tokenizer-free methods for text tokenization."    
+    "You are given the title and abstract of the paper."    
+)
+
 SYSTEM_PROMPT_UNIT = (
     "You are a helpful assistant. Your task is to identify the basic unit of analysis a text tokenizer uses, "
     "based on the paper’s title and content. The possible options are: bytes, characters, subwords, "
@@ -17,7 +22,7 @@ SYSTEM_PROMPT_LANGUAGE_MULTILINGUAL = (
     "You are a helpful assistant. Your task is to identify the languages that are used in the experiments of a research paper on text tokenization, "
     "based on the paper’s title and content."     
     "Answer only with the list of languages, each on its own line formatted as '* {language}'."
-    "If not language is specified, answer with 'Not specified'. "
+    "If no language is specified, answer with 'Not specified'. "
     "If the languages is not explicitly specified but can be inferred from the content, add '(inferred)' after the language name."
 )
 
@@ -35,6 +40,9 @@ SYSTEM_PROMPT_EVALUATION_INTRINSIC = ( # Is the tokenizer evaluated intrinsicall
     "Answer only with a list of the evaluation metrics, each on its own line formatted as '* {metric}'. "
     "If the paper does not perform intrinsic evaluation, answer with 'No'. "
     "Examples of intrinsic metrics include: fertility, morphological accuracy, tokenization parity, etc."
+    "While examples of extrinsic downstream tasks include: language modeling, machine translation, part-of-speech tagging, etc."
+    # "Do not include details: e.g., 'accuracy on the test set' should be answered with '* accuracy'."
+    # "Use the full name of the metric, not abbreviations: e.g., 'Word Error Rate' instead of 'WER'."
 )
 
 SYSTEM_PROMPT_EVALUATION_EXTRINSIC = ( # Is the tokenizer evaluated extrinsically? If so, what is the downstream task?
@@ -43,6 +51,10 @@ SYSTEM_PROMPT_EVALUATION_EXTRINSIC = ( # Is the tokenizer evaluated extrinsicall
     "Answer only with a list of the downstream tasks, each on its own line formatted as '* {task}'. "
     "If the paper does not perform extrinsic evaluation, answer with 'No'. "
     "Examples of downstream tasks include: language modeling, machine translation, part-of-speech tagging, etc."
+    "While examples of intrinsic metrics include: fertility, morphological accuracy, tokenization parity, etc."
+    # "Do not include details: e.g., 'machine translation from English to German' should be answered with '* machine translation'."
+    # "Use the full name of the task, not abbreviations: e.g., '* Part-of-Speech Tagging' instead of 'POS tagging'."
+    # "Use the name of the task, not the name of the dataset: e.g., '* Question Answering' instead of 'SQuAD'."
 )
 
 SYSTEM_PROMPT_MOTIVATION = (
@@ -61,14 +73,14 @@ USER_PROMPT_UNIT = (
     "The title is: '{title}'. \n"
     "The content is: '{content}'. \n\n"
     "What is the basic unit of analysis used by the text tokenizer described in the paper? "
-    "Answer only with a list of the most appropriate units, each on its own line formatted as '* {unit}'."
+    "Answer only with a list of the most appropriate units, each on its own line formatted as '* {{unit}}'."
 )
 
 USER_PROMPT_LANGUAGE_MULTILINGUAL = (
     "The title is: '{title}'. \n"
     "The content is: '{content}'. \n\n"
     "What are the languages that are used in the experiments of this research paper on text tokenization? "
-    "Answer only with the list of languages, each on its own line formatted as '* {language}'."    
+    "Answer only with the list of languages, each on its own line formatted as '* {{language}}'."    
 )
 
 USER_PROMPT_LANGUAGE_LANGUAGE_SPECIFIC = (
@@ -82,7 +94,7 @@ USER_PROMPT_EVALUATION_INTRINSIC = (
     "The title is: '{title}'. \n"
     "The content is: '{content}'. \n\n"
     "Is the text tokenizer described in the paper evaluated intrinsically? If so, what are the evaluation metrics used? "
-    "Answer only with a list of the evaluation metrics, each on its own line formatted as '* {metric}'. "
+    "Answer only with a list of the evaluation metrics, each on its own line formatted as '* {{metric}}'. "
     "If the paper does not perform intrinsic evaluation, answer with 'No'. "
 )
 
@@ -90,7 +102,7 @@ USER_PROMPT_EVALUATION_EXTRINSIC = (
     "The title is: '{title}'. \n"
     "The content is: '{content}'. \n\n"
     "Is the text tokenizer described in the paper evaluated extrinsically? If so, what are the downstream tasks used for evaluation? "
-    "Answer only with a list of the downstream tasks, each on its own line formatted as '* {task}'. "
+    "Answer only with a list of the downstream tasks, each on its own line formatted as '* {{task}}'. "
     "If the paper does not perform extrinsic evaluation, answer with 'No'. "
 )
 
