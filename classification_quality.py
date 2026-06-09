@@ -3,6 +3,7 @@ import argparse
 import json
 import os
 import pandas as pd
+import numpy as np
 import random
 import ipdb
 
@@ -115,17 +116,17 @@ def evaluate(path: str) -> None:
         print("Precision (Negative Class): 0.0000% (UNDEFINED)")
 
     try:
-        print(f"Recall (True Positive Rate): {tp / (tp + fn)*100:.4f}%")
+        print(f"Recall (True Positive Rate) (Sensitivity): {tp / (tp + fn)*100:.4f}%")
     except ZeroDivisionError:
-        print("Recall (True Positive Rate): 0.0000% (UNDEFINED)")
+        print("Recall (True Positive Rate) (Sensitivity): 0.0000% (UNDEFINED)")
     try:
         print(f"False Positive Rate: {fp / (fp + tn)*100:.4f}%")
     except ZeroDivisionError:
         print("False Positive Rate: 0.0000% (UNDEFINED)")
     try:
-        print(f"True Negative Rate: {tn / (fp + tn)*100:.4f}%")
+        print(f"True Negative Rate (Specificity): {tn / (fp + tn)*100:.4f}%")
     except ZeroDivisionError:
-        print("True Negative Rate: 0.0000% (UNDEFINED)")
+        print("True Negative Rate (Specificity): 0.0000% (UNDEFINED)")
     try:
         print(f"False Negative Rate: {fn / (tp + fn)*100:.4f}%")
     except ZeroDivisionError:
@@ -134,6 +135,66 @@ def evaluate(path: str) -> None:
     print(f"Confusion Matrix:\n")
     print(f"\tTP\t\tFP\t\t\t{tp}\t\t{fp}")
     print(f"\tFN\t\tTN\t\t\t{fn}\t\t{tn}")
+
+def evaluate_bootstrap(path: str, n: int = 1000, seed: int = 42) -> None:
+    annotations = parse_annotations(path)
+    total = len(annotations)
+    labels = list(annotations.values())
+    tp = []
+    fp = []
+    tn = []
+    fn = []
+    for i in range(n):
+        sample = random.Random(seed + i).choices(labels, k=total)
+        tp.append(sum(1 for llm_label, human_label in sample if llm_label and human_label))
+        fp.append(sum(1 for llm_label, human_label in sample if llm_label and not human_label))
+        tn.append(sum(1 for llm_label, human_label in sample if not llm_label and not human_label))
+        fn.append(sum(1 for llm_label, human_label in sample if not llm_label and human_label))
+    print(f"Bootstrap Evaluation with {n} samples (95% CI):")
+    tp = np.array(tp)
+    fp = np.array(fp)
+    tn = np.array(tn)
+    fn = np.array(fn)
+    print(f"True Positives: {tp.mean():.2f} ± {1.96*tp.std():.2f}")
+    print(f"False Positives: {fp.mean():.2f} ± {1.96*fp.std():.2f}")
+    print(f"True Negatives: {tn.mean():.2f} ± {1.96*tn.std():.2f}")
+    print(f"False Negatives: {fn.mean():.2f} ± {1.96*fn.std():.2f}")
+    print(f"Accuracy: {(tp + tn).mean() / total*100:.4f}% ± {1.96*(tp + tn).std() / total*100:.4f}%")
+    try:        
+        f1 = 2*tp / (2*tp + fp + fn)
+        print(f"F1 Score: {f1.mean()*100:.4f}% ± {1.96*f1.std()*100:.4f}%")
+    except ZeroDivisionError:        
+        print("F1 Score: 0.0000% (UNDEFINED)")
+    try: 
+        precision = tp / (tp + fp) 
+        print(f"Precision: {precision.mean()*100:.4f}% ± {1.96*precision.std()*100:.4f}%")
+    except ZeroDivisionError:        
+        print("Precision: 0.0000% (UNDEFINED)")
+    try: 
+        precision_neg = tn / (tn + fn)
+        print(f"Precision (Negative Class): {precision_neg.mean()*100:.4f}% ± {1.96*precision_neg.std()*100:.4f}%")
+    except ZeroDivisionError:        
+        print("Precision (Negative Class): 0.0000% (UNDEFINED)")
+    try: 
+        recall = tp / (tp + fn)
+        print(f"Recall (True Positive Rate) (Sensitivity): {recall.mean()*100:.4f}% ± {1.96*recall.std()*100:.4f}%")
+    except ZeroDivisionError:        
+        print("Recall (True Positive Rate) (Sensitivity): 0.0000% (UNDEFINED)")
+    try: 
+        false_positive_rate = fp / (fp + tn)
+        print(f"False Positive Rate: {false_positive_rate.mean()*100:.4f}% ± {1.96*false_positive_rate.std()*100:.4f}%")
+    except ZeroDivisionError:        
+        print("False Positive Rate: 0.0000% (UNDEFINED)")
+    try:        
+        true_negative_rate = tn / (fp + tn)
+        print(f"True Negative Rate (Specificity): {true_negative_rate.mean()*100:.4f}% ± {1.96*true_negative_rate.std()*100:.4f}%")
+    except ZeroDivisionError:        
+        print("True Negative Rate (Specificity): 0.0000% (UNDEFINED)")
+    try:        
+        false_negative_rate = fn / (tp + fn)
+        print(f"False Negative Rate: {false_negative_rate.mean()*100:.4f}% ± {1.96*false_negative_rate.std()*100:.4f}%")
+    except ZeroDivisionError:        
+        print("False Negative Rate: 0.0000% (UNDEFINED)")
 
 def fix(input_path: str, output_path: str, original_path: str) -> None:
     raise NotImplementedError()
@@ -213,7 +274,7 @@ if __name__ == "__main__":
     if args.command == "create":
         create(args.input, args.output, args.num_samples, args.seed)
     elif args.command == "evaluate":
-        evaluate(args.annotations)
+        evaluate_bootstrap(args.annotations)
     elif args.command == "fix":
         fix(args.input, args.output, args.original)
     elif args.command == "create-info":
