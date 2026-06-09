@@ -234,3 +234,132 @@ Laotian: Lao
 Ocitan: Occitan
 Taiwan Mandarin: Mandarin Chinese
 Taiwanese Mandarin: Mandarin Chinese
+zh-Hans: Mandarin Chinese
+zh-Hant: Mandarin Chinese
+Ancient Greek: Ionic-Attic Ancient Greek
+Arabizi: Standard Arabic # Simplification, this should be a script
+Armenian: Eastern-Western Armenian # Family
+Aymara: Central-Southern Aymara # Family
+Azerbaijani: Central Oghuz # Family
+Bahrain Arabic: Baharna Arabic
+Bahrani Arabic: Baharna Arabic
+Barasana‑Eduria: Barasana-Eduria
+Bemba: Bemba (Zambia) 
+Bishnupriya: Bishnupriya Manipuri
+Bosnian: Serbian-Croatian-Bosnian
+Croatian: Serbian-Croatian-Bosnian
+Bosnian: Serbian-Croatian-Bosnian
+EnglishNA: North American English
+EnglishUK: English
+Serbian: Serbian-Croatian-Bosnian
+Serbo‑Croatian: Serbian-Croatian-Bosnian
+li-x-east: null
+Cakchiquel: Kaqchikel
+Canadian French: French
+Central Atlas Tamazight: Central Moroccan Berber
+Central Bicolano: Coastal-Naga Bikol # Wikipedia
+Euskara: Basque # Alternative name
+Farsi: Western Farsi
+Fulfulde: Fula # Family
+Gaelic:  Scottish Gaelic
+Gaelic, Scottish:  Scottish Gaelic
+Greenlandic: Kalaallisut # Wikipedia
+Guarani: Paraguayan Guaraní # Most spoken
+Guaraní: Paraguayan Guaraní # Most spoken
+Haitian Creole: Haitian
+Hakha Chin: Haka Chin
+Hebrew: Modern Hebrew # Assuming modern
+Hmong: First Vernacular Hmong  # Family
+Indonesian: Standard Indonesian
+Inuktitut: Eastern Canadian Inuktitut # Most spoken / Wikipedia
+Iraqi Arabic: Gilit Mesopotamian Arabic # or North Mesopotamian Arabic
+Izii: Izi-Ezaa-Ikwo-Mgbo # Group of dialects, like Serbian-Croatian-Bosnian?
+Jakaltek: Popti' # Wikipedia
+Jordanian Arabic: Levantine Arabic # Wikipedia
+Kamba: Kamba (Kenya)
+Bodo: Bodo-Mech # from the dataset 'brx'
+Boko: Boko (Benin) # bqc
+Kanuri: Kanuri-Kanembu # Family, both languages can be called Kanuri
+Karachay‑Balkar: Karachay-Balkar
+Kekchí: Q'eqchi'
+Khalkha: Halh Mongolian
+Khmer: Central Khmer # or Northern Khmer
+Kikongo: Yombe # Wikipedia
+Konkani: Konkan Marathi # or Goan Konkani
+Kurmanji: Northern Kurdish # Wikipedia
+Kuwaiti Arabic: Kuwaiti Hadari Arabic
+K’iche’: K'iche'
+Lahnda: Western Panjabi # Wikipedia
+Lango: Lango (Uganda)
+Latgalian: East Latvian
+Lebanese Arabic: Levantine Arabic # Dialect
+Lezgi: Lezgian
+Lingala: Kinshasa Lingala
+Livonian: Liv
+Low Saxon: West Low German
+Luba-Kasai: Luba-Lulua
+Luba‑Kasai: Luba-Lulua
+Luo: Luo (Kenya and Tanzania)
+Lushai: Mizo # Alternative name
+Malagasy: Plateau Malagasy # Official name/standard
+Malay: Standard Malay
+Malaysian: Standard Malay
+Mandarin: Mandarin Chinese
+Mboshi: Mbosi
+Mesopotamian Arabic: Gilit Mesopotamian Arabic
+Mi’kmaq: Mi'kmaq
+Myanmar: Burmese
+Nahuatl: Eastern Huasteca Nahuatl # Family
+Natugu: Natügu
+Ndebele: Zimbabwean Ndebele
+Nepal Bhasa: Kathmandu Valley Newari # Alternative name
+Nigerian Fulfulde: Hausa States Fulfulde # Wikipedia
+North Levantine Arabic: Levantine Arabic # Same ISO code
+North Sámi: North Saami
+Norwegian‑Nynorsk: Norwegian Nynorsk
+Nyishi: Nyishi-Hill Miri
+Nynorsk: Norwegian Nynorsk
+Ojibwe: Ottawa # Family, selected a variety
+Old English: Old English (ca. 450-1100)
+Old French: Old French (842-ca. 1400)
+Old Irish: Early Irish # Group of historical Irish
+Oriya: Odia # Alternative name
+Oromo: Nuclear Oromo # Family
+Ossetian: Modern Ossetic # Family
+Ostrobothnian Finnish: Finnish # Dialect not distinguished by Glottolog
+Otomí: Mezquital Otomi # Most spoken variety
+Panjabi: Eastern Panjabi
+Persian: Western Farsi
+Popoluca: Popolocan # Family
+Popti’: Popti'
+PortugueseBr: Brazilian Portuguese
+PortuguesePt: Portuguese
+Proto‑Germanic: Germanic # Family
+Qatari Arabic: Gulf Arabic
+Quechua: Quechuan # Family
+Russian‑SynTagRus: Russian # From UD
+Sami: Saami
+Saudi Arabian Arabic: Najdi Arabic # Family, most likely
+Savonian Finnish: Savo
+Sesotho: Southern Sotho
+Shipibo-Konibo: Shipibo-Conibo
+Shipibo‑Konibo: Shipibo-Conibo
+South Eastern Finnish: Southeastern Finnish
+South Western Finnish: Southwestern Finnish
+Southwest Finnish: Southwestern Finnish
+Southwest Translated Finnish: Southwestern Finnish
+Swiss German: Central Alemannic
+Syriac: Classical Syriac
+Syrian Arabic: Levantine Arabic # Wikipedia
+Tagalog / Filipino: Tagalog
+Tavastian Finnish: Häme # Wikipedia
+Tetun: Tetum
+Tosk Albanian: Northern Tosk Albanian # The other languages in the group are spoken in Greece and Italy, this one in Albania
+Uyghur: Uighur
+Wa: Nuclear Waic # Family
+West Frisian: Western Frisian
+Western Persian: Western Farsi
+Yemeni Arabic: Sanaani Arabic
+Yiddish: Western Yiddish # Or Eastern, it does not affect the analysis
+Yorem Nokki: Mayo
+Zarma: Zarma-Kaado

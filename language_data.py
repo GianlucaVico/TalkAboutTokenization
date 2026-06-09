@@ -1,7 +1,7 @@
 import pyglottolog
 import os
 import dotenv
-import pyglottolog.config
+import pyglottolog.config as glottoconfig
 import pyglottolog.languoids
 dotenv.load_dotenv()
 import functools
@@ -30,7 +30,9 @@ CHINA = pyglottolog.languoids.Country(id='CN', name='China')
 INDIA = pyglottolog.languoids.Country(id='IN', name='India')
 EURASIA = get_glottolog_instance().macroareas['eurasia']
 AFRICA = get_glottolog_instance().macroareas['africa']
-NO_MACROAREA = pyglottolog.config.Macroarea(id='None', name='None', description='No macroarea assigned', reference_id='')
+PROG_MACROAREA = glottoconfig.Macroarea(id='prog', name='Programming Languages', description='Programming languages and other non-human languages', reference_id='')
+BIO_MACROAREA = glottoconfig.Macroarea(id='bio', name='Biological Sequences', description='Biological sequences such as DNA, RNA, and proteins', reference_id='')
+NO_MACROAREA = glottoconfig.Macroarea(id='None', name='None', description='No macroarea assigned', reference_id='')
 
 @functools.lru_cache(maxsize=1)
 def get_european_countries():
@@ -57,6 +59,8 @@ CHINESE = LanguoidPlaceHolder("Chinese", [EURASIA], [CHINA], family=get_glottolo
 AFRICAN = LanguoidPlaceHolder("African Languages", [AFRICA], [])
 INDIAN = LanguoidPlaceHolder("Indian Languages", [EURASIA], [INDIA])
 NO_LANGUAGE = LanguoidPlaceHolder("None", [NO_MACROAREA], [])
+PROG_LANGUAGE = LanguoidPlaceHolder("Programming Language", [PROG_MACROAREA], [])
+BIOLOGICAL = LanguoidPlaceHolder("Biological Sequence", [BIO_MACROAREA], [])
 
 # Anything related to Chinese languages not in glottolog
 CHINESE_SET = {    
@@ -68,7 +72,10 @@ CHINESE_SET = {
     'Modern Chinese',
     'Standard Written Chinese',
     'Traditional Chinese',
-    'Han-Vi'
+    'Han-Vi',
+    'Simplified Chinese',
+    'Literary Chinese',
+    'Transitional Chinese'
 }
 
 AFRICAN_SET = {
@@ -77,6 +84,15 @@ AFRICAN_SET = {
 
 INDIAN_SET = {
     'Indian Languages',
+    'Devanagari',
+}
+
+PROGRAMMING_LANGS = ["SQL", "SPARQL", "CUDA", "NatSQL", "C++", "Python", "Java", "JavaScript", "LaTeX", "92 programming languages", "Ruby", "Go", "Elixir", "Racket"]
+
+BIOLOGICAL_SET = {
+    'RNA',
+    'Protein',
+    'Protein sequences'
 }
 
 def map_to_glottolog(lang_name: str) -> pyglottolog.languoids.Languoid | LanguoidPlaceHolder | None:
@@ -88,6 +104,10 @@ def map_to_glottolog(lang_name: str) -> pyglottolog.languoids.Languoid | Languoi
         return AFRICAN
     elif lang_name in INDIAN_SET:
         return INDIAN
+    elif lang_name in PROGRAMMING_LANGS:
+        return PROG_LANGUAGE
+    elif lang_name in BIOLOGICAL_SET:
+        return BIOLOGICAL
     languoid = None
 
     languoid = index_.get(lang_name)

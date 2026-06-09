@@ -1,1 +1,1 @@
-/usr/bin/time -v jupyter-notebook --no-browser --port 9099 --NotebookApp.allow_origin='*' --NotebookApp.ip='0.0.0.0'
+/usr/bin/time -v jupyter-notebook --no-browser --port 9099 --ServerApp.allow_origin='*' --ServerApp.ip='0.0.0.0' --ServerApp.allow_remote_access=True
