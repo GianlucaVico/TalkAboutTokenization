@@ -274,6 +274,8 @@ if __name__ == "__main__":
     if args.command == "create":
         create(args.input, args.output, args.num_samples, args.seed)
     elif args.command == "evaluate":
+        evaluate(args.annotations)
+        print("\n")
         evaluate_bootstrap(args.annotations)
     elif args.command == "fix":
         fix(args.input, args.output, args.original)

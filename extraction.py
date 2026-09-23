@@ -5,13 +5,7 @@ import functools
 from extraction_maps import *
 from typing import Callable
 
-@functools.cache
-def invert_mapping(mapping: dict[str, list[str]]) -> dict[str, str]:
-    inverted = {}
-    for key, values in mapping.items():
-        for value in values:
-            inverted[value] = key
-    return inverted
+
 
 
 
@@ -71,21 +65,15 @@ def extract_languages(output: str) -> list[str]:
 
 def extract_units(output: str, unit_mapping: dict[str, list[str]] = None, other: bool = False) -> list[str]:
     output = output.lower().strip()
-    output = re.sub(
-        r"\([^\(\)]*\) ?", "", output
-    ).strip()  # remove parentheses with explanation
     output = re.sub(r"\.+$", "", output)  # remove trailing dot
 
-    if "," in output:
-        output = output.split(",")
-    elif "\n" in output:
+    if "\n" in output:
         output = output.split("\n")
     else:
         output = [output]
     items = [i.strip() for i in output]
     items = [i.replace("and ", "") for i in items]  # remove leading and
     items = [i.replace("* ", "") for i in items]  # remove bullets
-    items = [i.replace("sub-word", "subword") for i in items]  # normalize sub-word
     items = [i for i in items if i != ""]
 
     if unit_mapping is not None:
@@ -131,11 +119,34 @@ def extract_metrics(output: str, metric_mapping: Callable[[str], str] | None = N
     ).strip()  # remove parentheses with explanation
     output = re.sub(r"\.+$", "", output)  # remove trailing dot
     
-    output = output.replace("‑", "-") # normalize dashes
+    output = output.replace("‑", " ") # different utf characters
+    output = output.replace("-", " ")
     output = output.replace("\u202f", " ")
+    output = output.replace("₁", "1")
+    output = output.replace("’", "")  # remove apostrophes
+    output = output.replace("out of vocabulary", "oov")  # normalize oov
     output = output.split("\n")
+
+    # Remove top-[0-9]+, @[0-9]+, number at the end from metrics
+    output = [re.sub(r"top ?[0-9]+ ?", "", metric).strip() for metric in output]
+    output = [re.sub(r"@ ?[0-9]+ ?", "", metric).strip() for metric in output]
+    output = [re.sub(r"\b[0-9]+$", "", metric).strip() for metric in output] 
+    # Remove mean, average, macro, micro, normalized, overall from metrics
+    words = ["mean", "average", "averaged", "macro", "micro", "normalized", "overall", "full", "avg", "exact", "perfect", "proportion of", "number of", "and", "percentage of", "pos tagging", "part of speech tagging", "ner", "pos", ]
+    for word in words:
+        output = [re.sub(rf"\b{word}\b", "", metric).strip() for metric in output]
+
+    # Normalize whitespace
+    output = [re.sub(r"\s+", " ", metric).strip() for metric in output]
     metrics = [i.strip() for i in output]
-    metrics = [i.replace("* ", "") for i in metrics]  # remove bullets
+    metrics = [i.replace("* ", "").strip() for i in metrics]  # remove bullets
     metrics = [i for i in metrics if i != ""]
     metrics = [i for i in metrics if i != "no"]
+
+    if metric_mapping is not None:
+        inv_map = invert_mapping(metric_mapping)
+        if other:
+            metrics = [inv_map.get(metric, "other") for metric in metrics]
+        else:
+            metrics = [inv_map.get(metric, metric) for metric in metrics]
     return metrics
