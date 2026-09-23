@@ -13,7 +13,9 @@ data/motivation_bertopic_model*
 .venv/
 .ipynb_checkpoints/
 __pycache__/
-data/*.jsonl
+# data/*.jsonl
+*.bak
+*.old
 tmp/
 *.png
 .env
@@ -22,6 +24,7 @@ tmp/
 *.txt
 *.err
 *.out
+*.sh
 scraper/*.json
 OUTDATED/
 OLD/
