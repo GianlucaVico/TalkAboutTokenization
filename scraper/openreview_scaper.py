@@ -5,11 +5,14 @@ import time
 import tqdm
 import openreview.api
 import re
+USERNAME = os.environ.get("OPENREVIEW_USERNAME")
+PASSWORD = os.environ.get("OPENREVIEW_PASSWORD")
 
 def scraper(prefix: str, folder: str, year_filter: Callable[[str], bool]=None):
     year_re = re.compile(r"[0-9]{4}")
-
-    client = openreview.api.OpenReviewClient(baseurl='https://api2.openreview.net')
+    if USERNAME is None or PASSWORD is None:
+        raise ValueError("Please set OPENREVIEW_USERNAME and OPENREVIEW_PASSWORD environment variables")
+    client = openreview.api.OpenReviewClient(baseurl='https://api2.openreview.net', username=USERNAME, password=PASSWORD)
     venues = client.get_group(id="venues").members
     venues = [i for i in venues if i.lower().startswith(prefix)]
 
